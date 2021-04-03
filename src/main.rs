@@ -1,10 +1,10 @@
 use std::io;
 use std::io::prelude::*;
 use std::fs::File;
-use std::{thread, time};
 
 mod disassembler;
 mod cpu;
+mod window;
 
 fn main() {
     let mut cpu = cpu::Cpu::new();
@@ -16,9 +16,5 @@ fn main() {
 
     cpu.load_program(&buffer);
 
-    loop {
-        cpu.tick();
-
-        thread::sleep(time::Duration::from_secs(1));
-    }
+    window::create_window(cpu);
 }

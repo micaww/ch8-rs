@@ -1,7 +1,12 @@
 use crate::disassembler;
 use crate::disassembler::OpCode;
+use std::{thread, time};
+use std::time::{SystemTime, UNIX_EPOCH};
+use std::num::Wrapping;
 
 const PROGRAM_OFFSET: usize = 512;
+const CLOCK_FREQUENCY_HZ: u32 = 500;
+const TIMER_FREQUENCY_HZ: u32 = 60;
 
 pub struct Cpu {
     program_counter: usize,
@@ -12,6 +17,8 @@ pub struct Cpu {
     registers: [u8; 16],
     delay_timer: u8,
     sound_timer: u8,
+    next_tick: u128,
+    next_timer_tick: u128
 }
 
 impl Cpu {
@@ -24,7 +31,9 @@ impl Cpu {
             memory: [0; 4096],
             registers: [0; 16],
             delay_timer: 0,
-            sound_timer: 0
+            sound_timer: 0,
+            next_tick: 0,
+            next_timer_tick: 0
         }
     }
 
@@ -36,13 +45,38 @@ impl Cpu {
     }
 
     pub fn tick(&mut self) {
-        let addr = self.program_counter;
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
 
-        let opcode = disassembler::disassemble_word(u16::from_be_bytes([
+        if self.next_tick <= now {
+            self.execute();
+            self.next_tick = now + (1000 / CLOCK_FREQUENCY_HZ as u128);
+        }
+
+        if self.next_timer_tick <= now {
+            if self.delay_timer > 0 {
+                self.delay_timer -= 1;
+            }
+
+            if self.sound_timer > 0 {
+                self.sound_timer -= 1;
+            }
+
+            self.next_timer_tick = now + (1000 / TIMER_FREQUENCY_HZ as u128);
+        }
+    }
+
+    fn execute(&mut self) {
+        let addr = self.program_counter;
+        let word = u16::from_be_bytes([
             self.memory[addr],
-            self.memory[addr + 1],
-        ]));
-        println!("tick @ 0x{:x?}: {:?}", addr, opcode);
+            self.memory[addr + 1]
+        ]);
+        let opcode = disassembler::disassemble_word(word);
+
+        println!("tick @ 0x{:x?} ({:x?}): {:?}", addr, word, opcode);
 
         self.advance();
         self.execute_opcode(opcode);
