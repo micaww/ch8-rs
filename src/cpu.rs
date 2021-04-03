@@ -129,7 +129,7 @@ impl Cpu {
             }
             OpCode::AddVal(x, val) => {
                 // adds a value to a register w/o carry flag
-                self.registers[x as usize] += val;
+                self.registers[x as usize] = (Wrapping(self.registers[x as usize]) + Wrapping(val)).0;
             }
             OpCode::Copy(x, y) => {
                 // copies a value from rY to rX
