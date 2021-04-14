@@ -21,7 +21,7 @@ impl DisplayBuffer {
 
     /// XORs a pixel and returns if there was a collision.
     fn xor_pixel(&mut self, x: u8, y: u8) -> bool {
-        if x > WIDTH || y > HEIGHT {
+        if x >= WIDTH || y >= HEIGHT {
             return false;
         }
 
@@ -38,15 +38,35 @@ impl DisplayBuffer {
 
     /// Draws a sprite and returns if there was a collision.
     pub fn draw_sprite(&mut self, x: u8, y: u8, bytes: &[u8]) -> bool {
+        if x >= WIDTH || y >= HEIGHT {
+            return false;
+        }
+
         let mut collision = false;
 
-        for (y_offset, &byte) in bytes.iter().enumerate() {
-            for (x_offset, bit) in (0..8).rev().enumerate() {
+        let mut current_y = y;
+
+        for &byte in bytes.iter() {
+            let mut current_x = x;
+
+            for bit in (0..8).rev() {
                 let bit = (byte >> bit) & 0x01;
 
-                if bit > 0 && self.xor_pixel(x + x_offset as u8, y + y_offset as u8) {
+                if bit > 0 && self.xor_pixel(current_x, current_y) {
                     collision = true;
                 }
+
+                current_x += 1;
+
+                if current_x == WIDTH {
+                    current_x = 0;
+                }
+            }
+
+            current_y += 1;
+
+            if current_y == HEIGHT {
+                current_y = 0;
             }
         }
 
