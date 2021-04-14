@@ -35,11 +35,10 @@ pub enum OpCode {
     SetIndexCharacter(u8), // FX29
     StoreBCD(u8), // FX33
     RegDump(u8), // FX55
-    RegLoad(u8), // FX65
-    NoOp // for any unrecognized opcodes
+    RegLoad(u8) // FX65
 }
 
-pub fn disassemble_bytes(bytes: &[u8]) -> Vec<OpCode> {
+pub fn disassemble_bytes(bytes: &[u8]) -> Vec<Option<OpCode>> {
     Vec::from(bytes)
         .chunks_exact(2)
         .into_iter()
@@ -47,7 +46,7 @@ pub fn disassemble_bytes(bytes: &[u8]) -> Vec<OpCode> {
         .collect()
 }
 
-pub fn disassemble_word(word: u16) -> OpCode {
+pub fn disassemble_word(word: u16) -> Option<OpCode> {
     let op_1 = ((word & 0xF000) >> 12) as u8;
     let op_2: u8 = ((word & 0x0F00) >> 8) as u8;
     let op_3: u8 = ((word & 0x00F0) >> 4) as u8;
@@ -60,40 +59,40 @@ pub fn disassemble_word(word: u16) -> OpCode {
     let n = op_4;
 
     match (op_1, op_2, op_3, op_4) {
-        (0x0, 0x0, 0xE, 0x0) => OpCode::ClearDisplay,
-        (0x0, 0x0, 0xE, 0xE) => OpCode::Return,
-        (0x1, _, _, _) => OpCode::Jump(nnn),
-        (0x2, _, _, _) => OpCode::Call(nnn),
-        (0x3, _, _, _) => OpCode::SkipEqVal(x, nn),
-        (0x4, _, _, _) => OpCode::SkipNotEqVal(x, nn),
-        (0x5, _, _, 0x0) => OpCode::SkipEq(x, y),
-        (0x6, _, _, _) => OpCode::SetVal(x, nn),
-        (0x7, _, _, _) => OpCode::AddVal(x, nn),
-        (0x8, _, _, 0x0) => OpCode::Copy(x, y),
-        (0x8, _, _, 0x1) => OpCode::Or(x, y),
-        (0x8, _, _, 0x2) => OpCode::And(x, y),
-        (0x8, _, _, 0x3) => OpCode::Xor(x, y),
-        (0x8, _, _, 0x4) => OpCode::Add(x, y),
-        (0x8, _, _, 0x5) => OpCode::Subtract(x, y),
-        (0x8, _, _, 0x6) => OpCode::ShiftRight(x),
-        (0x8, _, _, 0x7) => OpCode::Difference(x, y),
-        (0x8, _, _, 0xE) => OpCode::ShiftLeft(x),
-        (0x9, _, _, 0x0) => OpCode::SkipNotEq(x, y),
-        (0xA, _, _, _) => OpCode::SetIndex(nnn),
-        (0xB, _, _, _) => OpCode::JumpOffset(nnn),
-        (0xC, _, _, _) => OpCode::Rand(x, nn),
-        (0xD, _, _, _) => OpCode::DrawSprite(x, y, n),
-        (0xE, _, 0x9, 0xE) => OpCode::SkipKeyPressed(x),
-        (0xE, _, 0xA, 0x1) => OpCode::SkipKeyNotPressed(x),
-        (0xF, _, 0x0, 0x7) => OpCode::GetDelayTimer(x),
-        (0xF, _, 0x0, 0xA) => OpCode::GetKeyPress(x),
-        (0xF, _, 0x1, 0x5) => OpCode::SetDelayTimer(x),
-        (0xF, _, 0x1, 0x8) => OpCode::SetSoundTimer(x),
-        (0xF, _, 0x1, 0xE) => OpCode::AddIndex(x),
-        (0xF, _, 0x2, 0x9) => OpCode::SetIndexCharacter(x),
-        (0xF, _, 0x3, 0x3) => OpCode::StoreBCD(x),
-        (0xF, _, 0x5, 0x5) => OpCode::RegDump(x),
-        (0xF, _, 0x6, 0x5) => OpCode::RegLoad(x),
-        _ => OpCode::NoOp
+        (0x0, 0x0, 0xE, 0x0) => Some(OpCode::ClearDisplay),
+        (0x0, 0x0, 0xE, 0xE) => Some(OpCode::Return),
+        (0x1, _, _, _) => Some(OpCode::Jump(nnn)),
+        (0x2, _, _, _) => Some(OpCode::Call(nnn)),
+        (0x3, _, _, _) => Some(OpCode::SkipEqVal(x, nn)),
+        (0x4, _, _, _) => Some(OpCode::SkipNotEqVal(x, nn)),
+        (0x5, _, _, 0x0) => Some(OpCode::SkipEq(x, y)),
+        (0x6, _, _, _) => Some(OpCode::SetVal(x, nn)),
+        (0x7, _, _, _) => Some(OpCode::AddVal(x, nn)),
+        (0x8, _, _, 0x0) => Some(OpCode::Copy(x, y)),
+        (0x8, _, _, 0x1) => Some(OpCode::Or(x, y)),
+        (0x8, _, _, 0x2) => Some(OpCode::And(x, y)),
+        (0x8, _, _, 0x3) => Some(OpCode::Xor(x, y)),
+        (0x8, _, _, 0x4) => Some(OpCode::Add(x, y)),
+        (0x8, _, _, 0x5) => Some(OpCode::Subtract(x, y)),
+        (0x8, _, _, 0x6) => Some(OpCode::ShiftRight(x)),
+        (0x8, _, _, 0x7) => Some(OpCode::Difference(x, y)),
+        (0x8, _, _, 0xE) => Some(OpCode::ShiftLeft(x)),
+        (0x9, _, _, 0x0) => Some(OpCode::SkipNotEq(x, y)),
+        (0xA, _, _, _) => Some(OpCode::SetIndex(nnn)),
+        (0xB, _, _, _) => Some(OpCode::JumpOffset(nnn)),
+        (0xC, _, _, _) => Some(OpCode::Rand(x, nn)),
+        (0xD, _, _, _) => Some(OpCode::DrawSprite(x, y, n)),
+        (0xE, _, 0x9, 0xE) => Some(OpCode::SkipKeyPressed(x)),
+        (0xE, _, 0xA, 0x1) => Some(OpCode::SkipKeyNotPressed(x)),
+        (0xF, _, 0x0, 0x7) => Some(OpCode::GetDelayTimer(x)),
+        (0xF, _, 0x0, 0xA) => Some(OpCode::GetKeyPress(x)),
+        (0xF, _, 0x1, 0x5) => Some(OpCode::SetDelayTimer(x)),
+        (0xF, _, 0x1, 0x8) => Some(OpCode::SetSoundTimer(x)),
+        (0xF, _, 0x1, 0xE) => Some(OpCode::AddIndex(x)),
+        (0xF, _, 0x2, 0x9) => Some(OpCode::SetIndexCharacter(x)),
+        (0xF, _, 0x3, 0x3) => Some(OpCode::StoreBCD(x)),
+        (0xF, _, 0x5, 0x5) => Some(OpCode::RegDump(x)),
+        (0xF, _, 0x6, 0x5) => Some(OpCode::RegLoad(x)),
+        _ => None
     }
 }

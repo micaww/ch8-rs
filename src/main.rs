@@ -3,8 +3,10 @@ use std::io::prelude::*;
 use std::fs::File;
 
 mod disassembler;
+mod display;
 mod cpu;
 mod window;
+mod keyboard;
 
 fn main() {
     let mut cpu = cpu::Cpu::new();
@@ -14,6 +16,7 @@ fn main() {
 
     f.read_to_end(&mut buffer).unwrap();
 
+    cpu.init();
     cpu.load_program(&buffer);
 
     window::create_window(cpu);
