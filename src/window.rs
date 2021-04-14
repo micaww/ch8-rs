@@ -2,7 +2,7 @@ use winit::dpi::LogicalSize;
 use winit::window::WindowBuilder;
 use winit::event_loop::{EventLoop, ControlFlow};
 use winit_input_helper::WinitInputHelper;
-use pixels::{SurfaceTexture, Pixels};
+use pixels::{SurfaceTexture, Pixels, PixelsBuilder};
 use winit::event::{Event, VirtualKeyCode};
 use crate::cpu::Cpu;
 use crate::display;
@@ -26,26 +26,34 @@ pub fn create_window(mut cpu: Cpu) {
     let mut pixels = {
         let inner = window.inner_size();
         let texture = SurfaceTexture::new(inner.width, inner.height, &window);
-        Pixels::new(display::WIDTH as u32, display::HEIGHT as u32, texture).unwrap()
+
+        PixelsBuilder::new(display::WIDTH as u32, display::HEIGHT as u32, texture)
+            .enable_vsync(false)
+            .build()
+            .unwrap()
     };
 
     ev_loop.run(move |event, _, control_flow| {
-        // draw frame
-        if let Event::RedrawRequested(_) = event {
-            let frame = pixels.get_frame();
-            let display = cpu.get_display();
+        match event {
+            Event::RedrawRequested(_) | Event::MainEventsCleared => {
+                // draw screen
+                let frame = pixels.get_frame();
+                let display = cpu.get_display();
 
-            for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-                let new_pixel = if display.is_set(i) {
-                    [255, 255, 255, 255]
-                } else {
-                    [20, 20, 20, 255]
-                };
+                for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+                    let new_pixel = if display.is_set(i) {
+                        [255, 255, 255, 255]
+                    } else {
+                        [20, 20, 20, 255]
+                    };
 
-                pixel.copy_from_slice(&new_pixel);
+                    pixel.copy_from_slice(&new_pixel);
+                }
+
+                pixels.render().unwrap();
+                window.request_redraw();
             }
-
-            pixels.render().unwrap();
+            _ => {}
         }
 
         // handle input events
@@ -73,8 +81,6 @@ pub fn create_window(mut cpu: Cpu) {
                     }
                 }
             }
-
-            window.request_redraw();
         }
 
         // interpreter tick
