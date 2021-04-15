@@ -1,28 +1,52 @@
 use winit::event::VirtualKeyCode;
 
 pub struct KeyboardInput {
-    key_states: [bool; 16]
+    key_states: [bool; 16],
+    last_released_key: Option<u8>,
+    track_next_released_key: bool
 }
 
 impl KeyboardInput {
     pub fn new() -> Self {
         KeyboardInput {
-            key_states: [false; 16]
+            key_states: [false; 16],
+            last_released_key: None,
+            track_next_released_key: false
         }
     }
 
-    /// Sets a key state.
-    pub fn set_key_pressed(&mut self, key: u8, pressed: bool) {
-        self.key_states[key as usize] = pressed;
+    /// Checks if we're tracking the next key release
+    pub fn is_tracking_next_key_release(&self) -> bool {
+        self.track_next_released_key
     }
 
-    /// Checks if a key is currently pressed.
+    /// Tracks for the next key
+    pub fn track_next_key_release(&mut self, track: bool) {
+        self.last_released_key = None;
+        self.track_next_released_key = track;
+    }
+
+    /// Gets the last released key if we're waiting for it
+    pub fn get_last_released_key(&self) -> Option<u8> {
+        self.last_released_key
+    }
+
+    /// Sets a key state
+    pub fn set_key_pressed(&mut self, key: u8, pressed: bool) {
+        self.key_states[key as usize] = pressed;
+
+        if !pressed && self.track_next_released_key {
+            self.last_released_key = Some(key);
+        }
+    }
+
+    /// Checks if a key is currently pressed
     pub fn is_key_pressed(&self, key: u8) -> bool {
         self.key_states[key as usize]
     }
 }
 
-/// Gets a virtual key code from a CHIP-8 key.
+/// Gets a virtual key code from a CHIP-8 key
 pub fn get_keycode_from_key(key: u8) -> Option<VirtualKeyCode> {
     // CHIP-8 keyboard is mapped to PC as follows:
 

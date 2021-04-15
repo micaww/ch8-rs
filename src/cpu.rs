@@ -292,8 +292,20 @@ impl Cpu {
             }
             OpCode::GetKeyPress(x) => {
                 // blocks until any key is pressed, then stores that key in rX
-                // todo: implement
-                self.program_counter -= 2;
+
+                // if we're not already tracking a key, start
+                if !self.keyboard.is_tracking_next_key_release() {
+                    self.keyboard.track_next_key_release(true);
+                }
+
+                // see if a key has been released yet
+                if let Some(key) = self.keyboard.get_last_released_key() {
+                    self.keyboard.track_next_key_release(false);
+                    self.registers[x as usize] = key;
+                } else {
+                    // no key released, so run this instruction again
+                    self.program_counter -= 2;
+                }
             }
             OpCode::SetDelayTimer(x) => {
                 // sets delay timer to value of rX
