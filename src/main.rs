@@ -1,6 +1,7 @@
 use std::io;
 use std::io::prelude::*;
 use std::fs::File;
+use std::env;
 
 mod disassembler;
 mod display;
@@ -10,12 +11,15 @@ mod keyboard;
 mod speaker;
 
 fn main() {
-    let mut cpu = cpu::Cpu::new();
+    let args: Vec<String> = env::args().collect();
+    let path = args.get(1).expect("You must specify the ROM file to run.");
 
-    let mut f = File::open("C:\\Users\\micah\\IdeaProjects\\ch8-rs\\roms\\pong.rom").unwrap();
+    let mut f = File::open(path).unwrap();
     let mut buffer = Vec::new();
 
     f.read_to_end(&mut buffer).unwrap();
+
+    let mut cpu = cpu::Cpu::new();
 
     cpu.init();
     cpu.load_program(&buffer);
