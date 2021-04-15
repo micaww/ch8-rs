@@ -2,6 +2,7 @@ use crate::disassembler;
 use crate::disassembler::OpCode;
 use crate::display;
 use crate::keyboard;
+use crate::speaker;
 
 use std::{thread, time};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -43,7 +44,8 @@ pub struct Cpu {
     next_tick: u128,
     next_timer_tick: u128,
     display: display::DisplayBuffer,
-    keyboard: keyboard::KeyboardInput
+    keyboard: keyboard::KeyboardInput,
+    speaker: speaker::Speaker
 }
 
 impl Cpu {
@@ -60,7 +62,8 @@ impl Cpu {
             next_tick: 0,
             next_timer_tick: 0,
             display: display::DisplayBuffer::new(),
-            keyboard: keyboard::KeyboardInput::new()
+            keyboard: keyboard::KeyboardInput::new(),
+            speaker: speaker::Speaker::new()
         }
     }
 
@@ -95,6 +98,12 @@ impl Cpu {
         if self.next_tick <= now {
             self.execute();
             self.next_tick = now + (1000 / CLOCK_FREQUENCY_HZ as u128);
+        }
+
+        if self.sound_timer > 0 {
+            self.speaker.start();
+        } else {
+            self.speaker.stop();
         }
 
         if self.next_timer_tick <= now {

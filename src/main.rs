@@ -7,6 +7,7 @@ mod display;
 mod cpu;
 mod window;
 mod keyboard;
+mod speaker;
 
 fn main() {
     let mut cpu = cpu::Cpu::new();

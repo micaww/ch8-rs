@@ -1,9 +1,10 @@
-use winit::dpi::LogicalSize;
-use winit::window::WindowBuilder;
-use winit::event_loop::{EventLoop, ControlFlow};
-use winit_input_helper::WinitInputHelper;
 use pixels::{SurfaceTexture, Pixels, PixelsBuilder};
+use winit::dpi::LogicalSize;
 use winit::event::{Event, VirtualKeyCode};
+use winit::event_loop::{EventLoop, ControlFlow};
+use winit::platform::windows::WindowBuilderExtWindows;
+use winit::window::WindowBuilder;
+use winit_input_helper::WinitInputHelper;
 use crate::cpu::Cpu;
 use crate::display;
 use crate::keyboard;
@@ -19,6 +20,7 @@ pub fn create_window(mut cpu: Cpu) {
             .with_title("CHIP-8 Interpreter")
             .with_inner_size(size)
             .with_min_inner_size(size)
+            .with_drag_and_drop(false)
             .build(&ev_loop)
             .unwrap()
     };
