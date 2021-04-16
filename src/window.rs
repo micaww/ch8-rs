@@ -1,4 +1,4 @@
-use pixels::{SurfaceTexture, Pixels, PixelsBuilder};
+use pixels::{SurfaceTexture, PixelsBuilder};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, VirtualKeyCode};
 use winit::event_loop::{EventLoop, ControlFlow};

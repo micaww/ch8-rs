@@ -1,4 +1,4 @@
-use rodio::{source::SineWave, Source, OutputStreamHandle, OutputStream, Sink};
+use rodio::{source::SineWave, OutputStream, Sink};
 
 pub struct Speaker {
     stream: OutputStream,

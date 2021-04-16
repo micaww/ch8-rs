@@ -4,10 +4,7 @@ use crate::display;
 use crate::keyboard;
 use crate::speaker;
 
-use std::{thread, time};
 use std::time::{SystemTime, UNIX_EPOCH};
-use std::num::Wrapping;
-use rand::prelude::*;
 
 const PROGRAM_OFFSET: usize = 512;
 const CLOCK_FREQUENCY_HZ: u32 = 500;
