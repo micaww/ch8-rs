@@ -1,20 +1,20 @@
 use rodio::{source::SineWave, OutputStream, Sink};
 
 pub struct Speaker {
-    stream: OutputStream,
+    _stream: OutputStream,
     sink: Sink
 }
 
 impl Speaker {
     pub fn new() -> Self {
-        let (stream, stream_handle) = OutputStream::try_default().unwrap();
+        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
 
         sink.pause();
         sink.append(SineWave::new(440));
 
         Speaker {
-            stream,
+            _stream,
             sink
         }
     }

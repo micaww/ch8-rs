@@ -2,12 +2,14 @@ use pixels::{SurfaceTexture, PixelsBuilder};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, VirtualKeyCode};
 use winit::event_loop::{EventLoop, ControlFlow};
+#[cfg(windows)]
 use winit::platform::windows::WindowBuilderExtWindows;
 use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
 use crate::cpu::Cpu;
 use crate::display;
 use crate::keyboard;
+use pixels::wgpu::PresentMode;
 
 pub fn create_window(mut cpu: Cpu) {
     let ev_loop = EventLoop::new();
@@ -16,11 +18,17 @@ pub fn create_window(mut cpu: Cpu) {
     let window = {
         let multiplier = 15;
         let size = LogicalSize::new(display::WIDTH as u32 * multiplier, display::HEIGHT as u32 * multiplier);
-        WindowBuilder::new()
+        let mut builder = WindowBuilder::new()
             .with_title("CHIP-8 Interpreter")
             .with_inner_size(size)
-            .with_min_inner_size(size)
-            .with_drag_and_drop(false)
+            .with_min_inner_size(size);
+
+        #[cfg(windows)]
+        {
+            builder = builder.with_drag_and_drop(false);
+        }
+
+        builder
             .build(&ev_loop)
             .unwrap()
     };
@@ -30,7 +38,7 @@ pub fn create_window(mut cpu: Cpu) {
         let texture = SurfaceTexture::new(inner.width, inner.height, &window);
 
         PixelsBuilder::new(display::WIDTH as u32, display::HEIGHT as u32, texture)
-            .enable_vsync(false)
+            .present_mode(PresentMode::Mailbox)
             .build()
             .unwrap()
     };
