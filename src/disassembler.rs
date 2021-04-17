@@ -33,7 +33,7 @@ pub enum OpCode {
     SetSoundTimer(u8), // FX18
     AddIndex(u8), // FX1E
     SetIndexCharacter(u8), // FX29
-    StoreBCD(u8), // FX33
+    StoreBcd(u8), // FX33
     RegDump(u8), // FX55
     RegLoad(u8) // FX65
 }
@@ -90,7 +90,7 @@ pub fn disassemble_word(word: u16) -> Option<OpCode> {
         (0xF, _, 0x1, 0x8) => Some(OpCode::SetSoundTimer(x)),
         (0xF, _, 0x1, 0xE) => Some(OpCode::AddIndex(x)),
         (0xF, _, 0x2, 0x9) => Some(OpCode::SetIndexCharacter(x)),
-        (0xF, _, 0x3, 0x3) => Some(OpCode::StoreBCD(x)),
+        (0xF, _, 0x3, 0x3) => Some(OpCode::StoreBcd(x)),
         (0xF, _, 0x5, 0x5) => Some(OpCode::RegDump(x)),
         (0xF, _, 0x6, 0x5) => Some(OpCode::RegLoad(x)),
         _ => None

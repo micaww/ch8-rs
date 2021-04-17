@@ -66,16 +66,12 @@ impl Cpu {
 
     pub fn init(&mut self) {
         // load font data into memory
-        for i in 0..FONT_SPRITES.len() {
-            self.memory[i] = FONT_SPRITES[i];
-        }
+        self.memory[..FONT_SPRITES.len()].copy_from_slice(&FONT_SPRITES);
     }
 
     pub fn load_program(&mut self, buffer: &[u8]) {
         // load program into memory starting at the program offset
-        for i in 0..buffer.len() {
-            self.memory[PROGRAM_OFFSET + i] = buffer[i];
-        }
+        self.memory[PROGRAM_OFFSET..PROGRAM_OFFSET + buffer.len()].copy_from_slice(buffer);
     }
 
     pub fn get_display(&self) -> &display::DisplayBuffer {
@@ -122,16 +118,12 @@ impl Cpu {
             self.memory[addr],
             self.memory[addr + 1]
         ]);
-        match disassembler::disassemble_word(word) {
-            Some(opcode) => {
-                println!("tick @ 0x{:x?} ({:x?}): {:?}", addr, word, opcode);
 
-                self.advance();
-                self.execute_opcode(opcode);
-            },
-            None => {
-                // do nothing
-            }
+        if let Some(opcode) = disassembler::disassemble_word(word) {
+            println!("tick @ 0x{:x?} ({:x?}): {:?}", addr, word, opcode);
+
+            self.advance();
+            self.execute_opcode(opcode);
         }
     }
 
@@ -193,15 +185,15 @@ impl Cpu {
             }
             OpCode::Or(x, y) => {
                 // sets rX to bitwise OR of rX and rY
-                self.registers[x as usize] = self.registers[x as usize] | self.registers[y as usize];
+                self.registers[x as usize] |= self.registers[y as usize];
             }
             OpCode::And(x, y) => {
                 // sets rX to bitwise AND of rX and rY
-                self.registers[x as usize] = self.registers[x as usize] & self.registers[y as usize];
+                self.registers[x as usize] &= self.registers[y as usize];
             }
             OpCode::Xor(x, y) => {
                 // sets rX to bitwise XOR of rX and rY
-                self.registers[x as usize] = self.registers[x as usize] ^ self.registers[y as usize];
+                self.registers[x as usize] ^= self.registers[y as usize];
             }
             OpCode::Add(x, y) => {
                 // adds rY to rX and sets flag to 1 if there is a carry
@@ -320,7 +312,7 @@ impl Cpu {
                 // sets memory index to sprite of the character that is in a register
                 self.index = self.registers[x as usize] as u16 * 5;
             }
-            OpCode::StoreBCD(x) => {
+            OpCode::StoreBcd(x) => {
                 // store binary-coded decimal in memory
                 let val = self.registers[x as usize];
                 let addr = self.index as usize;

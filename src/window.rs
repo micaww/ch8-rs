@@ -82,7 +82,7 @@ pub fn create_window(mut cpu: Cpu) {
             }
 
             // other key inputs
-            for key in 0x0..=0xF as u8 {
+            for key in 0x0..=0xF_u8 {
                 if let Some(key_code) = keyboard::get_keycode_from_key(key) {
                     if input.key_pressed(key_code) {
                         keyboard.set_key_pressed(key, true);
